@@ -43,7 +43,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
         self.root = "./www"
         s = parse[1].decode(encoding='UTF-8')
         path = self.root + s
-        print(path)
+        
         if parse[0] != b'GET':
             self.code = 405
             self.respond(path)
@@ -53,13 +53,11 @@ class MyWebServer(socketserver.BaseRequestHandler):
         #self.request.sendall(bytearray("OK",'utf-8'))
 
     def check_path(self, path):
-        print("path =:")
-        print(path)
+    
         result = ""
         end = path[-1]
         newPath = os.path.normpath(path)
-        print("newPath =:")
-        print(newPath)
+        
         if not newPath.startswith(self.root[2:]):
             self.code = 404
             return None
@@ -70,7 +68,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
         if os.path.exists(newPath):
             if end == "/":
-                print("you got the right!")
+                
                 newPath += "/index.html"
                 try:
                     self.code = 200
@@ -81,7 +79,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
                     self.code = 404
                     return None
             else:
-                print("you are wrong!")
+                
                 if path.endswith(".html"):
                     try:
                         self.code = 200
@@ -101,48 +99,45 @@ class MyWebServer(socketserver.BaseRequestHandler):
                         self.code = 404
                         return None
                 else:
-                    try:
-                        self.code = 301
-                        newPath += "/index.html"
-                        self.content = open(newPath, "r").read()
+                    
+                    self.code = 301
+                    newPath += "/"
+                        #self.content = open(newPath+"index.html", "r").read()
 
-                        return newPath
-                    except IOError:
-                        self.code = 404
-                        return None
+                    return newPath
+                    
 
 
 
     def respond(self,path):
-        print("code == : "+ str(self.code) )
+        
         if self.code == 200:
-            message = response[200] + "Location: http://127.0.0.1:8080/%s\r\n" %(path[2:])
+            message = response[200] + "Location: http://127.0.0.1:8080/%s\r\n" %(path[6:])
             message += "Content-Type: " + self.contentType + "; charset=UTF-8\r\n"
             message += "Connection: close\r\n\r\n"
             message += self.content + "\r\n"
-            print(message)
+            
             self.request.sendall(bytearray(message,'utf-8'))
         elif self.code == 301:
-            print("301 location!!!!")
-            print(path)
-            message = response[301] + "Location: http://127.0.0.1:8080/%s\r\n" %(path[2:])
+            
+            message = response[301] + "Location: http://127.0.0.1:8080/%s\r\n" %(path[6:])
             message += "Content-Type: text/html; charset=UTF-8\r\n"
-            message += "Connection: close\r\n\r\n"
-            message += self.content + "\r\n"
-            print(message)
+            message += "Connection: close\r\n"
+            #message += self.content + "\r\n"
+            
             self.request.sendall(bytearray(message,'utf-8'))
         elif self.code == 404:
             message = response[404] + "Content-Type: text/plain; charset=UTF-8\r\n"
             message += "Connection: close\r\n\r\n"
             message += "404 Not Found\r\n"
             
-            print(message)
+            
             self.request.sendall(bytearray(message,'utf-8'))
 
         elif self.code == 405:
             message = response[405]
             message += "Connection: close\r\n"
-            print(message)
+            
             self.request.sendall(bytearray(message,'utf-8'))
 
 if __name__ == "__main__":
